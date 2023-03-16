@@ -1,0 +1,9 @@
+live_loop :osc do
+  use_real_time
+  osc = sync "/osc*"
+  puts osc
+  play osc
+  sleep 0.2
+end
+
+
