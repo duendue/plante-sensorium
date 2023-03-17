@@ -268,8 +268,7 @@ public void serialUpdatePlantSensorData(){
 }
 
 public void sendOSCMessage(String plantName, int sensorValue){
-  OscMessage myOscMessage = new OscMessage("");
-  myOscMessage.add(plantName + "/");
+  OscMessage myOscMessage = new OscMessage(plantName);
   myOscMessage.add(sensorValue);
   oscP5.send(myOscMessage, myBroadcastLocation);
 }

@@ -1,0 +1,13 @@
+live_loop :Plant_A do
+  use_real_time
+  plantA = sync "/osc*/Plant_A"
+  play plantA
+  sleep 0.2
+end
+
+live_loop :Plant_B do
+  use_real_time
+  plantB = sync "/osc*/Plant_B"
+  play plantB
+  sleep 0.2
+end
