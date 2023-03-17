@@ -25,7 +25,7 @@ boolean isContactEstablished = false;
 
 //Slider styling adjustments
 int xPosSlider = 50;
-int yPosSlider = 50;
+int yPosSlider = 100;
 int xSizeSlider = 20;
 int ySizeSlider = 100;
 int startValueSlider = 0;
@@ -33,7 +33,7 @@ int endValueSlider = 40000;
 
 //Text styling adjustments
 int xPosText = 15;
-int yPosText = 175;
+int yPosText = 225;
 
 ControlP5 MyController;
 ControlP5 PlantSliderController;
@@ -41,17 +41,12 @@ ControlP5 MyButtonController;
 
 void setup() 
 {
-  size(1200, 200);
+  size(1200, 300);
   MyController = new ControlP5(this);  
   PlantSliderController = new ControlP5(this);
   MyButtonController = new ControlP5(this);
 
-  String serialPortName = SerialUtils.findArduinoPort();
-  myPort = new Serial(this, serialPortName, 115200);
-  myPort.bufferUntil('\n');
-  
-  oscP5 = new OscP5(this,12000);
-  myBroadcastLocation = new NetAddress("127.0.0.1",4560);
+  setupCommunication();
   
   plantBuilder();
     
@@ -64,6 +59,20 @@ void setup()
     .setId(100)
   ;
 
+}
+
+public void setupCommunication(){
+  String serialPortName = SerialUtils.findArduinoPort();
+  
+  if(SerialUtils.findArduinoPort() == null){
+    serialPortName = Serial.list()[2];
+  }
+  
+  myPort = new Serial(this, serialPortName, 115200);
+  myPort.bufferUntil('\n');
+  
+  oscP5 = new OscP5(this,12000);
+  myBroadcastLocation = new NetAddress("127.0.0.1",4560);
 }
 
 public void Refresh(){
@@ -203,6 +212,11 @@ public class Plant {
     textAlign(CENTER);
   }
   
+  public void triggerText(){
+    text("Triggered!", this.xPos, 90);
+    textAlign(CENTER);
+  }
+  
   public void setName(String name){
     this.plantName = name;
   }
@@ -253,17 +267,17 @@ public void serialUpdatePlantSensorData(){
   }
 }
 
-public void sendOSCMessage(int sensorValue){
+public void sendOSCMessage(String plantName, int sensorValue){
   OscMessage myOscMessage = new OscMessage("");
+  myOscMessage.add(plantName + "/");
   myOscMessage.add(sensorValue);
   oscP5.send(myOscMessage, myBroadcastLocation);
-  //delay(50);
 }
 
-public int triggerNote(String plantName, int dataValue, int threshold){
+public int triggerNote(Plant plantObj, int dataValue, int threshold){
   if(dataValue > 100){
     if (dataValue >= threshold){
-      println(plantName + " triggered!");
+      plantObj.triggerText();
       int soundNote = floor(map(dataValue, threshold, 350000, 60, 100));   
       return soundNote;      
     }
@@ -277,8 +291,8 @@ void draw(){
   if(plants != null){
     for(Plant plant : plants){
       plant.updateText();
-      int note = triggerNote(plant.plantName, plant.plantSensorValue, plant.triggerThreshold);
-      sendOSCMessage(note);
+      int note = triggerNote(plant, plant.plantSensorValue, plant.triggerThreshold);
+      sendOSCMessage(plant.plantName, note);
     }
     
     serialUpdatePlantSensorData();
