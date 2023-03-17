@@ -30,6 +30,7 @@ void establishContact(){
 void loop() {
   
   CSread();
+  delay(100);
 }
 
 void CSread() {

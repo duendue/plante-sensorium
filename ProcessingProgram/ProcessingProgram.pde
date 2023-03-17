@@ -255,7 +255,7 @@ public void sendOSCMessage(int sensorValue){
   OscMessage myOscMessage = new OscMessage("");
   myOscMessage.add(sensorValue);
   oscP5.send(myOscMessage, myBroadcastLocation);
-  delay(50);
+  //delay(50);
 }
 
 public int triggerNote(String plantName, int dataValue, int threshold){
