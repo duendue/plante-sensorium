@@ -34,11 +34,16 @@ int xPosText = 15;
 int yPosText = 175;
 
 ControlP5 MyController;
+ControlP5 PlantSliderController;
+ControlP5 MyButtonController;
 
 void setup() 
 {
   size(1200, 200);
-  MyController = new ControlP5(this);
+  MyController = new ControlP5(this);  
+  PlantSliderController = new ControlP5(this);
+  MyButtonController = new ControlP5(this);
+
   String portName = Serial.list()[2];
   myPort = new Serial(this, portName, 115200);
   myPort.bufferUntil('\n');
@@ -47,19 +52,51 @@ void setup()
   myBroadcastLocation = new NetAddress("127.0.0.1",4560);
   
   plantBuilder();
+    
+
+
   
-  MyController = new ControlP5(this);
+  MyButtonController.addButton("Refresh")
+    .setPosition(15,15)
+    .setSize(100, 20)
+    .setId(100)
+  ;
 
 }
 
-public void controlEvent (ControlEvent theEvent){
+public void Refresh(){
+  clearAll();
+  plantBuilder();
+}
+
+public void CyclePlants(){
   for(Plant plant : plants){
-    if(plant.id == theEvent.getId()){
-      int sliderValue = floor(theEvent.getValue());
-      plant.setTriggerThreshold(sliderValue);
-      println("Set " + plant.plantName + " trigger threshold to " + plant.triggerThreshold);
-    }
+    println(plant);
   }
+}
+
+public void clearAll(){
+  for(Plant plant : plants){
+    plant.removeSlider();
+    delay(20);
+  }
+  
+  plants = null;
+  isContactEstablished = false;
+  background(55);
+  delay(50);
+}
+
+public void controlEvent (ControlEvent theEvent){
+  if(plants != null){
+      for(Plant plant : plants){
+        if(plant != null && plant.id == theEvent.getId()){
+          int sliderValue = floor(theEvent.getValue());
+          plant.setTriggerThreshold(sliderValue);
+          println("Set " + plant.plantName + " trigger threshold to " + plant.triggerThreshold);
+        }
+      }
+    }
 }
 
 //Function for building plant objects based on sensor input from arduino. If 1 sensor is attached, this will build 1 plant object. If 10 sensors is attached, this will build 10 plant objects
@@ -115,26 +152,32 @@ void plantBuilder(){
       }
   }
 }
+
 //set name, value, threshold, id at creation
 public class Plant {
   public String plantName;
   public int plantSensorValue;
   public int triggerThreshold;
   public int id;
-  public int xPosSlider = 50;
-  public int xPosText = 15;
+  public int xPos = 100;
+  public int xPosText = 100;
+  public int xPosMod = 100;
+
   
   public void setData(String plantName, int plantSensorValue, int threshold, int id){
     this.plantName = plantName;
     this.plantSensorValue = plantSensorValue;
     this.triggerThreshold = threshold;
     this.id = id;
+    
+
+    
+    this.xPos = this.xPos + (this.id*this.xPosMod);
   }
   
   public void buildSlider(){
-    xPosSlider = xPosSlider + (id*xPosSlider);
-    MyController.addSlider(this.plantName)
-      .setPosition(xPosSlider,yPosSlider)
+    PlantSliderController.addSlider(this.plantName)
+      .setPosition(xPos,yPosSlider)
       .setRange(startValueSlider,endValueSlider)
       .setSize(xSizeSlider,ySizeSlider)
       .setValue(this.triggerThreshold)
@@ -142,14 +185,18 @@ public class Plant {
       ;
   }
   
+  public void removeSlider(){
+    PlantSliderController.remove(this.plantName);
+  }
+  
   public void buildText(){
-    this.xPosText = this.xPosText + (this.id*this.xPosText);
-    text("Sensor value: " + this.plantSensorValue, this.xPosText, yPosText);
+    text("Sensor value: " + this.plantSensorValue, this.xPos, yPosText);
+    textAlign(CENTER);
   }
   
   public void updateText(){
-    this.xPosText = this.xPosText + (this.id*this.xPosText);
-    text("Sensor value: " + this.plantSensorValue, this.xPosText, yPosText);
+    text("Sensor value: " + this.plantSensorValue, this.xPos, yPosText);
+    textAlign(CENTER);
   }
   
   public void setName(String name){
@@ -201,13 +248,13 @@ public void sendOSCMessage(int sensorValue){
   OscMessage myOscMessage = new OscMessage("");
   myOscMessage.add(sensorValue);
   oscP5.send(myOscMessage, myBroadcastLocation);
-  delay(100);
+  delay(50);
 }
 
-public int triggerNote(int dataValue, int threshold){
+public int triggerNote(String plantName, int dataValue, int threshold){
   if(dataValue > 100){
     if (dataValue >= threshold){
-      println("Trigger!");
+      println(plantName + " triggered!");
       int soundNote = floor(map(dataValue, threshold, 350000, 60, 100));   
       return soundNote;      
     }
@@ -219,22 +266,14 @@ public int triggerNote(int dataValue, int threshold){
 void draw(){
   background(55);
   
-  for(Plant plant : plants){
-    plant.updateText();
+  if(plants != null){
+    for(Plant plant : plants){
+      plant.updateText();
+      
+      int note = triggerNote(plant.plantName, plant.plantSensorValue, plant.triggerThreshold);
+      sendOSCMessage(note);
+    }
     
-    int note = triggerNote(plant.plantSensorValue, plant.triggerThreshold);
-    sendOSCMessage(note);
+    serialUpdatePlantSensorData();
   }
-
-  serialUpdatePlantSensorData();
-  /*
-  for(int i = 0; i < plants.length; i++){
-    int note = triggerNote(plants[i].plantSensorValue, plants[i].triggerThreshold);
-    sendOSCMessage(note);
-  }*/
-  /*
-  for(int i = 0; i < plants.length; i++){
-    plants[i].display();
-  }*/
-  
 }
