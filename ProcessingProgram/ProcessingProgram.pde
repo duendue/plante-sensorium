@@ -76,9 +76,11 @@ public void CyclePlants(){
 }
 
 public void clearAll(){
-  for(Plant plant : plants){
-    plant.removeSlider();
-    delay(20);
+  if(plants != null){
+    for(Plant plant : plants){
+      plant.removeSlider();
+      delay(20);
+    }  
   }
   
   plants = null;
