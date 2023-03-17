@@ -1,3 +1,5 @@
+import osteele.processing.SerialRecord.*;
+
 import controlP5.*;
 import netP5.*;
 import oscP5.*;
@@ -44,8 +46,8 @@ void setup()
   PlantSliderController = new ControlP5(this);
   MyButtonController = new ControlP5(this);
 
-  String portName = Serial.list()[2];
-  myPort = new Serial(this, portName, 115200);
+  String serialPortName = SerialUtils.findArduinoPort();
+  myPort = new Serial(this, serialPortName, 115200);
   myPort.bufferUntil('\n');
   
   oscP5 = new OscP5(this,12000);
