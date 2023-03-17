@@ -208,7 +208,7 @@ public class Plant {
   public void setSensorValue(int sensorValue){
     this.plantSensorValue = sensorValue;
   }
-  
+
   public void setTriggerThreshold(int triggerThreshold){
     this.triggerThreshold = triggerThreshold;
   }
@@ -227,6 +227,7 @@ public static boolean isNumeric(String str){
 }
 
 
+
 public void serialUpdatePlantSensorData(){
   if (myPort.available() > 0) {  // If data is available,
     val = myPort.readStringUntil('\n'); 
@@ -238,7 +239,11 @@ public void serialUpdatePlantSensorData(){
         for(int j = 0; j < plants.length; j++){
           if(dataArray[i].equals(plants[j].plantName)){
             int dataValue = int(dataArray[i+1]);
-            plants[j].setSensorValue(dataValue);
+            if(plants[j].plantSensorValue == dataValue){
+              break;
+            }else{
+              plants[j].setSensorValue(dataValue);
+            }
           }
         }      
       }
@@ -267,11 +272,9 @@ public int triggerNote(String plantName, int dataValue, int threshold){
 
 void draw(){
   background(55);
-  
   if(plants != null){
     for(Plant plant : plants){
       plant.updateText();
-      
       int note = triggerNote(plant.plantName, plant.plantSensorValue, plant.triggerThreshold);
       sendOSCMessage(note);
     }
