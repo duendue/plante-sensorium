@@ -1,0 +1,66 @@
+#use_real_time
+#this is set up for close to live music output. The "sleep 1" in the bottumn creates a small delay, so every
+#input recieved plays at the same time. This makes it possible for the pi to not play
+# a note if it is feeling overwhelmed by data. :)
+use_real_time
+
+live_loop :osc do
+  live_loop :A do
+    PlantA = sync "/osc*/Plant_A"
+    #    with_fx :level, amp: 1  do
+    with_fx :sound_out, output: 1 do #play only on output 1
+      use_synth :dark_ambience #with this synth
+      play PlantA, amp: 0.4 #with the pitch decided by value of input
+      sleep 0.35
+      #      end
+    end
+  end
+  
+  live_loop :B do
+    PlantB = sync "/osc*/Plant_B"
+    #    with_fx :level, amp: 1 do
+    with_fx :sound_out, output: 5 do #play only on output 1
+      use_synth :hollow #with this synth
+      play PlantB, amp: 0.05 #with the pitch decided by value of input
+      sleep 0.35
+      #      end
+    end
+  end
+  
+  live_loop :C do
+    PlantC = sync "/osc*/Plant_C"
+    #    with_fx :level, amp: 1 do
+    with_fx :sound_out, output: 1 do #play only on output 1
+      use_synth :dull_bell #with this synth
+      play PlantC, amp: 0.1 #with the pitch decided by value of input
+      sleep 0.35
+      #      end
+    end
+  end
+  
+  live_loop :D do
+    PlantD = sync "/osc*/Plant_D"
+    #    with_fx :level, amp: 1 do
+    with_fx :sound_out, output: 2 do #play only on output 1
+      use_synth :hollow #with this synth
+      play PlantD, amp: 0.1 #with the pitch decided by value of input
+      sleep 0.35
+      #      end
+    end
+  end
+  
+  live_loop :E do
+    PlantE = sync "/osc*/Plant_E"
+    #    with_fx :level, amp: 1 do
+    with_fx :sound_out, output: 5 do #play only on output 1
+      use_synth :growl #with this synth
+      play PlantE, amp: 0.05 #with the pitch decided by value of input
+      sleep 0.35
+      #      end
+    end
+  end
+  
+  
+  
+  sleep 3.0 / 8
+end
