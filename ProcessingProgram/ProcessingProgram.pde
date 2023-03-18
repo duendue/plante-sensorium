@@ -15,8 +15,6 @@ String data;      // Data received from the serial port
 String dataName = "";
 int dataValue = 0;
 
-int initialTriggerThreshold = 25000;
-
 Plant[] plants;
 
 String val;
@@ -29,7 +27,9 @@ int yPosSlider = 100;
 int xSizeSlider = 20;
 int ySizeSlider = 100;
 int startValueSlider = 0;
-int endValueSlider = 40000;
+int endValueSlider = 10000;
+int initialTriggerThreshold = 2500;
+
 
 //Text styling adjustments
 int xPosText = 15;
@@ -285,7 +285,7 @@ public int triggerNote(Plant plantObj, int dataValue, int threshold){
 }
 
 public int valueConverter(int dataValue, int threshold){
-  int soundNote = floor(map(dataValue, threshold, 350000, 60, 100));   
+  int soundNote = floor(map(dataValue, threshold, 10000, 60, 100));   
   return soundNote;
 }
 
