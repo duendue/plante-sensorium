@@ -277,7 +277,7 @@ public int triggerNote(Plant plantObj, int dataValue, int threshold){
   if(dataValue > 100){
     if (dataValue >= threshold){
       plantObj.triggerText();
-      int soundNote = floor(map(dataValue, threshold, 350000, 60, 100));   
+      int soundNote = floor(map(dataValue, threshold, 350000, 30, 70));   
       return soundNote;      
     }
   }
