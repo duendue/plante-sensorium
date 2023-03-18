@@ -284,16 +284,28 @@ public int triggerNote(Plant plantObj, int dataValue, int threshold){
   return 0;
 }
 
+public int valueConverter(int dataValue, int threshold){
+  int soundNote = floor(map(dataValue, threshold, 350000, 60, 100));   
+  return soundNote;
+}
+
+
+
+//if trigger threshold
+//convert value to note
+//send message
 
 void draw(){
   background(55);
   if(plants != null){
     for(Plant plant : plants){
       plant.updateText();
-      int note = triggerNote(plant, plant.plantSensorValue, plant.triggerThreshold);
-      sendOSCMessage(plant.plantName, note);
+      if(plant.plantSensorValue > plant.triggerThreshold){
+        plant.triggerText();
+        int note = valueConverter(plant.plantSensorValue, plant.triggerThreshold);
+        sendOSCMessage(plant.plantName, note);
+      }
     }
-    
     serialUpdatePlantSensorData();
   }
 }
