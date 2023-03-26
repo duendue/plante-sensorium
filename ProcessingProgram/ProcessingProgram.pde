@@ -195,6 +195,10 @@ public class Plant {
       .setSize(xSizeSlider,ySizeSlider)
       .setValue(this.triggerThreshold)
       .setId(this.id)
+      .setNumberOfTickMarks(25)
+      .showTickMarks(true)
+      .snapToTickMarks(true)
+      .setSliderMode(1)
       ;
   }
   
