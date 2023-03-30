@@ -106,7 +106,8 @@ public void controlEvent (ControlEvent theEvent){
         if(plant != null && plant.id == theEvent.getId()){
           int sliderValue = floor(theEvent.getValue());
           plant.setTriggerThreshold(sliderValue);
-          println("Set " + plant.plantName + " trigger threshold to " + plant.triggerThreshold);
+          //println("Set " + plant.plantName + " trigger threshold to " + plant.triggerThreshold);
+          myPort.write(plant.plantName + "/" + plant.triggerThreshold + "/");
         }
       }
     }
@@ -253,19 +254,23 @@ public void serialUpdatePlantSensorData(){
     val = myPort.readStringUntil('\n'); 
     if(val != null){
       val = trim(val); // Fjerner linjer uden data
+      println(val);
+
       String[] dataArray = val.split("/");
-      
-      for(int i = 0; i < dataArray.length; i++){
-        for(int j = 0; j < plants.length; j++){
-          if(dataArray[i].equals(plants[j].plantName)){
-            int dataValue = int(dataArray[i+1]);
-            if(plants[j].plantSensorValue == dataValue){
-              break;
-            }else{
-              plants[j].setSensorValue(dataValue);
+
+      if(dataArray.length > 1){   
+        for(int i = 0; i < dataArray.length; i++){
+          for(int j = 0; j < plants.length; j++){
+            if(dataArray[i].equals(plants[j].plantName)){
+              int dataValue = int(dataArray[i+1]);
+              if(plants[j].plantSensorValue == dataValue){
+                break;
+              }else{
+                plants[j].setSensorValue(dataValue);
+              }
             }
-          }
-        }      
+          }      
+        }
       }
     }
   }
