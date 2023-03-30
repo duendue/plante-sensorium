@@ -6,15 +6,15 @@
 class Plant {
   public:
     Plant (String, int, int, int);
-
+    Adafruit_NeoPixel _strip;
+    CapacitiveSensor _plantSensor;
     long _sensorValue;
     String _plantName;
     int _sensorPinOut;
     int _sensorPinIn;
     int _ledPin;
     int _triggerThreshold = 2500; 
-    
-    Adafruit_NeoPixel _strip;
+    int _ledCount = 60;
     
     float _period = 1500;
     bool _runningPulse = false;
@@ -26,34 +26,36 @@ class Plant {
     isArduinoTriggered();
     setupLED();
     displayLED();
+    setupSensor();
 };
 
-Plant::Plant(String plantName, int sensorPinOut, int sensorPinIn, int ledPin){
+Plant::Plant(String plantName, int sensorPinOut, int sensorPinIn, int ledPin):_plantSensor(sensorPinOut, sensorPinIn){
   _plantName = plantName;
   _sensorPinOut = sensorPinOut;
   _sensorPinIn = sensorPinIn;
   _ledPin = ledPin;
-
-
 }
 
 Plant::setupLED(){
-  Adafruit_NeoPixel _strip(60, _ledPin, NEO_GRB + NEO_KHZ800);
+  _strip = new Adafruit_NeoPixel(_ledCount, _ledPin, NEO_GRB + NEO_KHZ800);
   _strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   _strip.show();            // Turn OFF all pixels ASAP
   _strip.setBrightness(255);
 }
 
+Plant::setupSensor(){
+  _plantSensor = CapacitiveSensor(_sensorPinOut, _sensorPinIn);
+  _plantSensor.set_CS_AutocaL_Millis(0);
+}
+
 Plant::displayLED(){
-  for(int i = 0; i < _strip.numPixels(); i++){
+  for(int i = 0; i < _ledCount; i++){
     _strip.setPixelColor(i, 75, 75, 255);
   }
   _strip.show();
 }
 
 Plant::sensorRead(){
-  CapacitiveSensor _plantSensor = CapacitiveSensor(_sensorPinOut, _sensorPinIn);
-  _plantSensor.set_CS_AutocaL_Millis(0);
   _sensorValue = _plantSensor.capacitiveSensorRaw(30); //a: Sensor resolution is set to 80
 }
 
@@ -103,13 +105,6 @@ Plant::printObjectValues(){
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 
-// Which pin on the Arduino is connected to the NeoPixels?
-// On a Trinket or Gemma we suggest changing this to 1:
-#define LED_PIN    6
-
-// How many NeoPixels are attached to the Arduino?
-#define LED_COUNT 96
-
 // Declare our NeoPixel strip object:
 //Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // Argument 1 = Number of pixels in NeoPixel strip
@@ -131,14 +126,22 @@ long currentMillis = 0;
 float brightness = 0;
 float brightnessMod = 0;
 
+const int PLANT_COUNT = 12;
+String plantNames[PLANT_COUNT] = {"Plant_A", "Plant_B", "Plant_C", "Plant_D", "Plant_E", "Plant_F", "Plant_G", "Plant_H", "Plant_I", "Plant_J", "Plant_K"};
+Plant *plants[PLANT_COUNT];
 
+//Plant Name, SensorPinOut, SensorPinIn, LedPIN
 Plant plant_a("Plant_A", 30, 31, 6);
 
 void setup() {
   Serial.begin(115200);
-
-  plant_a.printObjectValues();
-  plant_a.setupLED();
+  
+  for(int i = 0; i < PLANT_COUNT; i++){
+    plants[i] = new Plant(plantNames[i], 30+i, 31+i, 2+i);
+    plants[i] -> setupSensor();
+    plants[i] -> setupLED();
+    plants[i] -> printObjectValues();
+  }
   
   //csPins1.set_CS_AutocaL_Millis(0);
   // These lines are specifically to support the Adafruit Trinket 5V 16 MHz.
@@ -184,13 +187,13 @@ void loop() {
   pulse();
   strip.show(); */
 
-  plant_a.displayLED();
+  plants[0] -> displayLED();
 
   long currentMillis = millis();
   if((currentMillis % 30) == 0){
-    plant_a.sensorRead();
-    plant_a.sensorSerialWrite();
-    plant_a.isArduinoTriggered();
+    plants[0] -> sensorRead();
+    plants[0] -> sensorSerialWrite();
+    plants[0] -> isArduinoTriggered();
     Serial.println();
   }
 
