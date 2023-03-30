@@ -1,32 +1,73 @@
 #include <CapacitiveSensor.h>
 #include <Adafruit_NeoPixel.h>
 
-//#include "Plant.h"
+// NEOPIXEL BEST PRACTICES for most reliable operation:
+// - Add 1000 uF CAPACITOR between NeoPixel strip's + and - connections.
+// - MINIMIZE WIRING LENGTH between microcontroller board and first pixel.
+// - NeoPixel strip's DATA-IN should pass through a 300-500 OHM RESISTOR.
+// - AVOID connecting NeoPixels on a LIVE CIRCUIT. If you must, ALWAYS
+//   connect GROUND (-) first, then +, then data.
+// - When using a 3.3V microcontroller with a 5V-powered NeoPixel strip,
+//   a LOGIC-LEVEL CONVERTER on the data line is STRONGLY RECOMMENDED.
+// (Skipping these may work OK on your workbench but can fail in the field)
 
-class Plant {
+#ifdef __AVR__
+ #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
+#endif
+
+class Plant { //PLANT CLASS. Contains a bunch of information relating to controlling the sensor and the LED strip.
   public:
+    //Constructor function for creating the object initially
     Plant (String, int, int, int);
+
+    //Constructors for classes using external libraries
     Adafruit_NeoPixel _strip;
     CapacitiveSensor _plantSensor;
-    long _sensorValue;
+ 
+    //General object variables
     String _plantName;
+    int _triggerThreshold = 2500; 
+
+    //Variables relating to sensor
     int _sensorPinOut;
     int _sensorPinIn;
+    long _sensorValue;
+
+    //Variables relating to LED pulse time
+    long _pulseStartTime;
+    float _pulsePeriod = 250;
+    bool _isPulseRunning = false;
+
+    //Variables relating to LEDs
     int _ledPin;
-    int _triggerThreshold = 2500; 
     int _ledCount = 60;
+    float _brightness = 0;
+    float _brightnessMod;
+    int _pulseCount = 2;
+    int _rColor = 50;
+    int _gColor = 255;
+    int _bColor = 50;
+
+    //CLASS FUNCTIONS
+    //Functions called initially to define LED strip, and pins for LEDS and Sensor
+    setupLED();
+    setupSensor();
     
-    float _period = 1500;
-    bool _runningPulse = false;
-    
-    setTriggerThreshold(int);
-    printObjectValues();
+    //Functions used to receive and send sensor data via Serial connection
     sensorRead();
     sensorSerialWrite();
+
+    //Function used to track trigger status.
     isArduinoTriggered();
-    setupLED();
+
+    //Functions used to control LED behavior
     displayLED();
-    setupSensor();
+    runPulse();
+
+    //Support functions to get name, set trigger and display other values.
+    String getName();
+    setTriggerThreshold(int);
+    printObjectValues();
 };
 
 Plant::Plant(String plantName, int sensorPinOut, int sensorPinIn, int ledPin):_plantSensor(sensorPinOut, sensorPinIn){
@@ -34,13 +75,22 @@ Plant::Plant(String plantName, int sensorPinOut, int sensorPinIn, int ledPin):_p
   _sensorPinOut = sensorPinOut;
   _sensorPinIn = sensorPinIn;
   _ledPin = ledPin;
+  _brightnessMod = (255/_pulsePeriod);
 }
 
 Plant::setupLED(){
-  _strip = new Adafruit_NeoPixel(_ledCount, _ledPin, NEO_GRB + NEO_KHZ800);
+  _strip.setPin(_ledPin);
+  _strip.updateLength(_ledCount);
+  _strip.updateType(NEO_GRB + NEO_KHZ800);
   _strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  _strip.clear();
+  _strip.setBrightness(_brightness);
   _strip.show();            // Turn OFF all pixels ASAP
-  _strip.setBrightness(255);
+  delay(10);
+}
+
+String Plant::getName(){
+  return _plantName;
 }
 
 Plant::setupSensor(){
@@ -50,7 +100,7 @@ Plant::setupSensor(){
 
 Plant::displayLED(){
   for(int i = 0; i < _ledCount; i++){
-    _strip.setPixelColor(i, 75, 75, 255);
+    _strip.setPixelColor(i, _rColor, _gColor, _bColor);
   }
   _strip.show();
 }
@@ -67,6 +117,37 @@ Plant::sensorSerialWrite(){
 
 Plant::setTriggerThreshold(int triggerThreshold){
   _triggerThreshold = triggerThreshold;
+}
+
+Plant::runPulse(){ 
+  if(isArduinoTriggered() && !_isPulseRunning){
+    _pulseStartTime = millis();
+    _isPulseRunning = true;
+  }
+
+  if(_isPulseRunning){
+    _brightness = _brightness + _brightnessMod;    
+
+    if(_brightness > 250){
+      _brightnessMod = _brightnessMod*-1;
+    }
+    
+    if(_brightness < 0){
+      _brightnessMod = _brightnessMod*-1;
+      _brightness = 0;
+      _isPulseRunning = false;
+    }
+  
+    _strip.setBrightness(_brightness);
+  
+  }
+  
+  if(millis() > _pulseStartTime + (_pulsePeriod*5)){
+    _brightnessMod = _brightnessMod*-1;
+    _brightness = 0;
+    _strip.setBrightness(_brightness);
+    _isPulseRunning = false; 
+  }
 }
 
 Plant::isArduinoTriggered(){
@@ -86,52 +167,14 @@ Plant::printObjectValues(){
   Serial.println(_triggerThreshold);
 }
 
-//CapacitiveSensor csPins1 = CapacitiveSensor(30,31); //10M Resistor between pins 7 and 8, you may also connect an antenna on pin 8
-
-// A basic everyday NeoPixel strip test program.
-
-// NEOPIXEL BEST PRACTICES for most reliable operation:
-// - Add 1000 uF CAPACITOR between NeoPixel strip's + and - connections.
-// - MINIMIZE WIRING LENGTH between microcontroller board and first pixel.
-// - NeoPixel strip's DATA-IN should pass through a 300-500 OHM RESISTOR.
-// - AVOID connecting NeoPixels on a LIVE CIRCUIT. If you must, ALWAYS
-//   connect GROUND (-) first, then +, then data.
-// - When using a 3.3V microcontroller with a 5V-powered NeoPixel strip,
-//   a LOGIC-LEVEL CONVERTER on the data line is STRONGLY RECOMMENDED.
-// (Skipping these may work OK on your workbench but can fail in the field)
-
-#include <Adafruit_NeoPixel.h>
-#ifdef __AVR__
- #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
-#endif
-
-// Declare our NeoPixel strip object:
-//Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
-// Argument 1 = Number of pixels in NeoPixel strip
-// Argument 2 = Arduino pin number (most are valid)
-// Argument 3 = Pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-//   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 
 
-// setup() function -- runs once at startup --------------------------------
+const int PLANT_COUNT = 1; //ADJUST BASED ON NUMBER OF ATTACHED SENSORS!
+String plantNames[PLANT_COUNT] = {"Plant_A"}; // "Plant_B", "Plant_C", "Plant_D", "Plant_E", "Plant_F", "Plant_G", "Plant_H", "Plant_I", "Plant_J", "Plant_K"}; //DEFINE PLANT NAMES HERE!
 
-long timeNow = 0;
-float period = 1500;
-long currentMillis = 0;
-
-float brightness = 0;
-float brightnessMod = 0;
-
-const int PLANT_COUNT = 12;
-String plantNames[PLANT_COUNT] = {"Plant_A", "Plant_B", "Plant_C", "Plant_D", "Plant_E", "Plant_F", "Plant_G", "Plant_H", "Plant_I", "Plant_J", "Plant_K"};
+//ARRAY OF PLANT OBJECTS BEING CREATED BASED ON THE PLANT_COUNT NUMBER ABOVE
 Plant *plants[PLANT_COUNT];
 
-//Plant Name, SensorPinOut, SensorPinIn, LedPIN
-Plant plant_a("Plant_A", 30, 31, 6);
 
 void setup() {
   Serial.begin(115200);
@@ -142,66 +185,24 @@ void setup() {
     plants[i] -> setupLED();
     plants[i] -> printObjectValues();
   }
-  
-  //csPins1.set_CS_AutocaL_Millis(0);
-  // These lines are specifically to support the Adafruit Trinket 5V 16 MHz.
-  // Any other board, you can remove this part (but no harm leaving it):
-#if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
-  clock_prescale_set(clock_div_1);
-#endif
-  // END of Trinket-specific code.
-/*
-  strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
-*/
-  brightnessMod = 255/period;
-  Serial.println(brightnessMod);
 }
-
-/*
-void CSread(int senseDelay) {
-  long currentMillis = millis();
-  if((currentMillis % senseDelay) == 0){
-    long cs1 = csPins1.capacitiveSensorRaw(30); //a: Sensor resolution is set to 80
-
-    
-    Serial.print("Plant_A/");
-    Serial.print(cs1);
-    Serial.println(); 
-  }
-}*/
-
-
-// loop() function -- runs repeatedly as long as board is on ---------------
-
-String triggerValue = "2500";
-
 
 
 void loop() {
- /* for(int i = 0; i < strip.numPixels(); i++){
-    strip.setPixelColor(i, 75, 75, 255);
+
+  long currentMillis = millis(); 
+
+  for(int i = 0; i < PLANT_COUNT; i++){
+    plants[i] -> displayLED();
+    plants[i] -> runPulse();
+      if((currentMillis % 25) == 0){ //Replacement for delay function. By using the Modulo operator on current millis, we run the underlying code block only at times when millis and 25 divided by each other equals a number where the remaining number is 0.
+        plants[i] -> sensorRead();
+        plants[i] -> sensorSerialWrite();
+        plants[i] -> isArduinoTriggered();
+        Serial.println();
+      }
   }
-
-  pulse();
-  strip.show(); */
-
-  plants[0] -> displayLED();
-
-  long currentMillis = millis();
-  if((currentMillis % 30) == 0){
-    plants[0] -> sensorRead();
-    plants[0] -> sensorSerialWrite();
-    plants[0] -> isArduinoTriggered();
-    Serial.println();
-  }
-
-  //Reads sensor pins. Input value specifies the delay between each reading. Delay is required as it limits overflow of data.
-  //CSread(30);
-
   receiveSerialData();
-
 }
 
 //Code block that runs through Serial data being send, checks for "/" and converts data into array divided at each "/" symbol-.
@@ -209,8 +210,8 @@ void receiveSerialData(){
   if(Serial.read() > 0){
     
     String dataArray[10];
-    int r = 0;
-    int t = 0;
+    int r = 0; //Uncertain what this value tracks??
+    int t = 0; //this values stores the number of elements to loop through in the new array. The value is incrased each time a new element is added to the array.
     
     String dataString = Serial.readString();
     dataString.trim();
@@ -223,54 +224,19 @@ void receiveSerialData(){
         r = (i+1);
       }
     }
-
     
     for(int k = 0; k <= t; k++){
-      if(dataArray[k].equals("Plant_A")){
-        if(dataArray[k+1] != NULL){
-          if(dataArray[k+1].toInt() > 0){
-            int dataValue = dataArray[k+1].toInt();
-            plant_a.setTriggerThreshold(dataValue);
-            plant_a.printObjectValues();
-          }  
-        }       
+      for(int j = 0; j < PLANT_COUNT; j++){
+        if(dataArray[k].equals(plants[j] -> getName())){
+          if(dataArray[k+1] != NULL){
+            if(dataArray[k+1].toInt() > 0){
+              int dataValue = dataArray[k+1].toInt();
+              plants[j] -> setTriggerThreshold(dataValue);
+            }  
+          }       
+        }
       }
     } 
-
     delay(10);
   }
 }
-
-void updateStrip(){
-  
-}
-
-bool runningPulse = false;
-/*
-void triggerPulse(){
-  runningPulse = true;
-  strip.clear();
-  for(int i = 0; i < strip.numPixels(); i++){
-    strip.setPixelColor(i, 75, 75, 255);
-  }
-  
-  strip.setBrightness(0);
-
-  strip.show();   
-}
-
-void pulse(){
-  if(millis() > timeNow + period){
-    brightnessMod = brightnessMod*-1;
-    timeNow = millis();
-  }
-  //Serial.println(brightness);
-  brightness = brightness + brightnessMod;
-  if(brightness > 255){
-    brightness = 255;
-  }
-  if(brightness < 0){
-    brightness = 0;
-  }
-  plant_a._strip.setBrightness(brightness);
-}*/
