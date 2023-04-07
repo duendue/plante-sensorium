@@ -15,6 +15,7 @@
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 
+
 class Plant { //PLANT CLASS. Contains a bunch of information relating to controlling the sensor and the LED strip.
   public:
     //Constructor function for creating the object initially
@@ -113,6 +114,7 @@ Plant::sensorSerialWrite(){
   Serial.print(_plantName);
   Serial.print("/");
   Serial.print(_sensorValue);
+  Serial.print("/");
 }
 
 Plant::setTriggerThreshold(int triggerThreshold){
@@ -167,20 +169,19 @@ Plant::printObjectValues(){
   Serial.println(_triggerThreshold);
 }
 
-
-
-const int PLANT_COUNT = 1; //ADJUST BASED ON NUMBER OF ATTACHED SENSORS!
-String plantNames[PLANT_COUNT] = {"Plant_A"}; // "Plant_B", "Plant_C", "Plant_D", "Plant_E", "Plant_F", "Plant_G", "Plant_H", "Plant_I", "Plant_J", "Plant_K"}; //DEFINE PLANT NAMES HERE!
+const int PLANT_COUNT = 12; //ADJUST BASED ON NUMBER OF ATTACHED SENSORS!
+String plantNames[PLANT_COUNT] = {"Plant_A", "Plant_B", "Plant_C", "Plant_D", "Plant_E", "Plant_F", "Plant_G", "Plant_H", "Plant_I", "Plant_J", "Plant_K", "Plant_L"}; //DEFINE PLANT NAMES HERE!
+//String plantNames[PLANT_COUNT] = {"Plant_A", "Plant_B", "Plant_C", "Plant_D", "Plant_E", "Plant_F", "Plant_G"};
+//String plantNames[PLANT_COUNT] = {"Plant_A", "Plant_B", "Plant_C"};
 
 //ARRAY OF PLANT OBJECTS BEING CREATED BASED ON THE PLANT_COUNT NUMBER ABOVE
 Plant *plants[PLANT_COUNT];
-
 
 void setup() {
   Serial.begin(115200);
   
   for(int i = 0; i < PLANT_COUNT; i++){
-    plants[i] = new Plant(plantNames[i], 30+i, 31+i, 2+i);
+    plants[i] = new Plant(plantNames[i], 30+(i*2), 31+(i*2), 2+i);
     plants[i] -> setupSensor();
     plants[i] -> setupLED();
     plants[i] -> printObjectValues();
@@ -195,13 +196,13 @@ void loop() {
   for(int i = 0; i < PLANT_COUNT; i++){
     plants[i] -> displayLED();
     plants[i] -> runPulse();
-      if((currentMillis % 25) == 0){ //Replacement for delay function. By using the Modulo operator on current millis, we run the underlying code block only at times when millis and 25 divided by each other equals a number where the remaining number is 0.
+      if((currentMillis % 1) == 0){ //Replacement for delay function. By using the Modulo operator on current millis, we run the underlying code block only at times when millis and 25 divided by each other equals a number where the remaining number is 0.
         plants[i] -> sensorRead();
         plants[i] -> sensorSerialWrite();
         plants[i] -> isArduinoTriggered();
-        Serial.println();
       }
   }
+  Serial.println();
   receiveSerialData();
 }
 

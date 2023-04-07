@@ -41,7 +41,7 @@ ControlP5 MyButtonController;
 
 void setup() 
 {
-  size(1200, 300);
+  size(1300, 300);
   MyController = new ControlP5(this);  
   PlantSliderController = new ControlP5(this);
   MyButtonController = new ControlP5(this);
