@@ -99,7 +99,8 @@ boolean doesFileExist(String filePath) {
 
 public void setupCommunication() {
   oscP5 = new OscP5(this, 12000);
-  myBroadcastLocation = new NetAddress("192.168.8.135", 4560); //*lokal:127.0.0.1 - router:brug ip fra anden enhed
+  //We need IP Address of laptop to connect to, in order to establish OSC connection
+  myBroadcastLocation = new NetAddress("192.168.8.137", 4560); //*lokal:127.0.0.1 - router:brug ip fra anden enhed
 
   println("-----------------------------------");
   delay(1000);
