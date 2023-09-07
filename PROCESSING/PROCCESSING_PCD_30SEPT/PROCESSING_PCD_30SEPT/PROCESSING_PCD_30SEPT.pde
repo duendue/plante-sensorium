@@ -1,5 +1,4 @@
 import osteele.processing.SerialRecord.*;
-
 import controlP5.*;
 import netP5.*;
 import oscP5.*;
@@ -38,7 +37,11 @@ int maxValueMod = 3000;
 int xPosText = 15;
 int yPosText = 225;
 
-int sensorCalibrationAmount = 10;
+//Calibration variables
+//How many values to collect
+int sensorCalibrationAmount = 20;
+//How many milliseconds to run the calibration
+int calibrationTime = 10000;
 
 JSONObject json;
 
@@ -490,6 +493,8 @@ public class Plant {
       }  
     }
     
+    highestSensorValue += 150;
+    
     this.setTriggerThreshold(highestSensorValue);
     setSliderTrigger(this.plantName, highestSensorValue);
     println("Highest Sensor Value of: " + this.plantName + " is the following: " + highestSensorValue);
@@ -587,11 +592,13 @@ public void generateDebugSensorValue() {
 }
 
 public void calibrateSensors(){
+  int calibrationInterval = calibrationTime / sensorCalibrationAmount;
+  
   for(int i = 0; i < sensorCalibrationAmount; i++){
     for (Plant plant : plants){
        plant.setPastSensorValue(i, plant.plantSensorValue);
     }
-    delay(1000);
+    delay(calibrationInterval);
   }
   
   for(Plant plant : plants){
