@@ -1,0 +1,62 @@
+{"Plants": [
+  {
+    "Trigger Threshold": 3997,
+    "Plant Index": 0,
+    "Plant Name": "A11"
+  },
+  {
+    "Trigger Threshold": 3276,
+    "Plant Index": 1,
+    "Plant Name": "A12"
+  },
+  {
+    "Trigger Threshold": 3877,
+    "Plant Index": 2,
+    "Plant Name": "A2"
+  },
+  {
+    "Trigger Threshold": 9228,
+    "Plant Index": 3,
+    "Plant Name": "B11"
+  },
+  {
+    "Trigger Threshold": 9318,
+    "Plant Index": 4,
+    "Plant Name": "B12"
+  },
+  {
+    "Trigger Threshold": 7094,
+    "Plant Index": 5,
+    "Plant Name": "B2"
+  },
+  {
+    "Trigger Threshold": 9979,
+    "Plant Index": 6,
+    "Plant Name": "C11"
+  },
+  {
+    "Trigger Threshold": 8446,
+    "Plant Index": 7,
+    "Plant Name": "C12"
+  },
+  {
+    "Trigger Threshold": 10671,
+    "Plant Index": 8,
+    "Plant Name": "C2"
+  },
+  {
+    "Trigger Threshold": 9408,
+    "Plant Index": 9,
+    "Plant Name": "D11"
+  },
+  {
+    "Trigger Threshold": 10130,
+    "Plant Index": 10,
+    "Plant Name": "D12"
+  },
+  {
+    "Trigger Threshold": 7274,
+    "Plant Index": 11,
+    "Plant Name": "D2"
+  }
+]}
