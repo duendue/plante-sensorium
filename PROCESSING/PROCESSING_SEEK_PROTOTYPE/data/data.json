@@ -1,6 +1,6 @@
 {"Plants": [
   {
-    "Trigger Threshold": 4601,
+    "Trigger Threshold": 5106,
     "Plant Index": 0,
     "Plant Name": "A1"
   },
@@ -10,17 +10,17 @@
     "Plant Name": "A2"
   },
   {
-    "Trigger Threshold": 4601,
+    "Trigger Threshold": 4881,
     "Plant Index": 2,
     "Plant Name": "A3"
   },
   {
-    "Trigger Threshold": 10100,
+    "Trigger Threshold": 16553,
     "Plant Index": 3,
     "Plant Name": "B1"
   },
   {
-    "Trigger Threshold": 9426,
+    "Trigger Threshold": 12064,
     "Plant Index": 4,
     "Plant Name": "B2"
   },
@@ -30,32 +30,32 @@
     "Plant Name": "B3"
   },
   {
-    "Trigger Threshold": 11110,
+    "Trigger Threshold": 11054,
     "Plant Index": 6,
     "Plant Name": "C1"
   },
   {
-    "Trigger Threshold": 8753,
+    "Trigger Threshold": 8472,
     "Plant Index": 7,
     "Plant Name": "C2"
   },
   {
-    "Trigger Threshold": 10717,
+    "Trigger Threshold": 10773,
     "Plant Index": 8,
     "Plant Name": "C3"
   },
   {
-    "Trigger Threshold": 9258,
+    "Trigger Threshold": 9090,
     "Plant Index": 9,
     "Plant Name": "D1"
   },
   {
-    "Trigger Threshold": 12064,
+    "Trigger Threshold": 10773,
     "Plant Index": 10,
     "Plant Name": "D2"
   },
   {
-    "Trigger Threshold": 8136,
+    "Trigger Threshold": 7855,
     "Plant Index": 11,
     "Plant Name": "D3"
   }
