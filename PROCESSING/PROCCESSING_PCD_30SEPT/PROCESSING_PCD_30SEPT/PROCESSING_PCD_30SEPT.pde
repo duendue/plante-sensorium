@@ -45,11 +45,13 @@ int calibrationTime = 10000;
 //The additional value that will be added to the calibrated trigger threshold
 int calibrationBuffer = 100;
 
+boolean calibratingSensors = false;
+
 JSONObject json;
 
 //DEBUG VARIABLES
 //Change this variable to "true" to be able to build and simulate system without raspberry and arduino attached.
-boolean debugMode = false;
+boolean debugMode = true;
 
 ControlP5 MyController;
 ControlP5 PlantSliderController;
@@ -386,7 +388,7 @@ void plantBuilder() {
       }
       delay(100);
     }
-    
+
     //If running in debug mode, create 12 pre defined plant objects with a starting sensor value of 10000
   } else {
     String[] plantNameArray = {"A0", "A1", "A2", "B0", "B1", "B2", "C0", "C1", "C2", "D0", "D1", "D2"};
@@ -486,25 +488,24 @@ public class Plant {
   public void display() {
     println("Plant name is: " + plantName + " and plant sensor value is: " + plantSensorValue);
   }
-  
-  public void setCalibratedTriggerThreshold(){
+
+  public void setCalibratedTriggerThreshold() {
     int highestSensorValue = 0;
-    
-    for(int i = 0; i < this.pastSensorValues.length; i++){
-      if(highestSensorValue < this.pastSensorValues[i]){
+
+    for (int i = 0; i < this.pastSensorValues.length; i++) {
+      if (highestSensorValue < this.pastSensorValues[i]) {
         highestSensorValue = this.pastSensorValues[i];
-      }  
+      }
     }
-    
+
     highestSensorValue += calibrationBuffer;
-    
+
     this.setTriggerThreshold(highestSensorValue);
     setSliderTrigger(this.plantName, highestSensorValue);
     println("Highest Sensor Value of: " + this.plantName + " is the following: " + highestSensorValue);
-    
   }
-  
-  public void setPastSensorValue(int index, int value){
+
+  public void setPastSensorValue(int index, int value) {
     this.pastSensorValues[index] = value;
   }
 }
@@ -594,19 +595,21 @@ public void generateDebugSensorValue() {
   }
 }
 
-public void calibrateSensors(){
+public void calibrateSensors() {
+  calibratingSensors = true;
   int calibrationInterval = calibrationTime / sensorCalibrationAmount;
-  
-  for(int i = 0; i < sensorCalibrationAmount; i++){
-    for (Plant plant : plants){
-       plant.setPastSensorValue(i, plant.plantSensorValue);
+
+  for (int i = 0; i < sensorCalibrationAmount; i++) {
+    for (Plant plant : plants) {
+      plant.setPastSensorValue(i, plant.plantSensorValue);
     }
     delay(calibrationInterval);
   }
-  
-  for(Plant plant : plants){
+
+  for (Plant plant : plants) {
     plant.setCalibratedTriggerThreshold();
   }
+  calibratingSensors = false;
 }
 
 
@@ -620,14 +623,12 @@ void draw() {
   background(55);
   if (plants != null) {
     for (Plant plant : plants) {
-      sendOSCMessage(plant.plantName, plant.plantSensorValue); //*note ændret til sensorvalue + flyttet herop fra linje 515
+      if (!calibratingSensors) {
+        sendOSCMessage(plant.plantName, plant.plantSensorValue); //*note ændret til sensorvalue + flyttet herop fra linje 515
+      }
       plant.updateText();
       if (plant.plantSensorValue > plant.triggerThreshold) {
         plant.triggerText();
-        float currentMillis = millis();
-        if (currentMillis % 10 == 0) {
-          int note = valueConverter(plant.plantSensorValue, plant.triggerThreshold, plant.maxValue);
-        }
       }
     }
     serialUpdatePlantSensorData();
