@@ -45,7 +45,7 @@ int calibrationTime = 10000;
 //The additional value that will be added to the calibrated trigger threshold
 int calibrationBuffer = 100;
 
-boolean calibratingSensors = false;
+boolean canSendOnOSC = false;
 
 JSONObject json;
 
@@ -376,6 +376,12 @@ void plantBuilder() {
           myPort.write("Finished Building");
 
           isContactEstablished = true;
+          delay(100);
+          loadData();
+          Send();
+          delay(100);
+
+          canSendOnOSC = true;
         } else {
           println("Data received, but incomplete / missing points.");
           delay(50);
@@ -596,7 +602,7 @@ public void generateDebugSensorValue() {
 }
 
 public void calibrateSensors() {
-  calibratingSensors = true;
+  canSendOnOSC = false;
   int calibrationInterval = calibrationTime / sensorCalibrationAmount;
 
   for (int i = 0; i < sensorCalibrationAmount; i++) {
@@ -609,7 +615,7 @@ public void calibrateSensors() {
   for (Plant plant : plants) {
     plant.setCalibratedTriggerThreshold();
   }
-  calibratingSensors = false;
+  canSendOnOSC = true;
 }
 
 
@@ -623,7 +629,7 @@ void draw() {
   background(55);
   if (plants != null) {
     for (Plant plant : plants) {
-      if (!calibratingSensors) {
+      if (canSendOnOSC) {
         sendOSCMessage(plant.plantName, plant.plantSensorValue); //*note ændret til sensorvalue + flyttet herop fra linje 515
       }
       plant.updateText();
