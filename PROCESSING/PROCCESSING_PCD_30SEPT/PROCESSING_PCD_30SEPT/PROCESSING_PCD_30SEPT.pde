@@ -37,14 +37,17 @@ int maxValueMod = 3000;
 int xPosText = 15;
 int yPosText = 225;
 
-//Calibration variables
+//CALIBRATION VARIABLES - USE TO ADJUST HOW SYSTEM CALIBRATES
 //How many values to collect
 int sensorCalibrationAmount = 20;
 //How many milliseconds to run the calibration
 int calibrationTime = 10000;
+//The additional value that will be added to the calibrated trigger threshold
+int calibrationBuffer = 100;
 
 JSONObject json;
 
+//DEBUG VARIABLES
 //Change this variable to "true" to be able to build and simulate system without raspberry and arduino attached.
 boolean debugMode = false;
 
@@ -115,7 +118,7 @@ boolean doesFileExist(String filePath) {
 
 public void setupCommunication() {
   oscP5 = new OscP5(this, 12000);
-  myBroadcastLocation = new NetAddress("192.168.8.135", 4560); //*lokal:127.0.0.1 - router:brug ip fra anden enhed
+  myBroadcastLocation = new NetAddress("127.0.0.1", 4560); //*lokal:127.0.0.1 - router:brug ip fra anden enhed
 
   println("-----------------------------------");
   delay(1000);
@@ -493,7 +496,7 @@ public class Plant {
       }  
     }
     
-    highestSensorValue += 150;
+    highestSensorValue += calibrationBuffer;
     
     this.setTriggerThreshold(highestSensorValue);
     setSliderTrigger(this.plantName, highestSensorValue);
